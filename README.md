@@ -230,3 +230,30 @@ uv pip install -e .
 - Incremental updates (only re-analyze changed repos)
 - Human-in-the-loop intervention points
 - Session persistence and resumability
+
+
+tmux kill-session -t orchestrator
+
+## Quick Reference
+
+### While in tmux:
+Ctrl+b d        # Detach (keeps session running)
+Ctrl+b &        # Kill current window
+Ctrl+b c        # Create new window
+exit             # ❌ Don't do this - kills the window
+
+### From terminal (outside tmux):
+
+orchestrator    # Start/attach session
+tmux kill-session -t orchestrator   # Kill session
+tmux list-sessions                  # See all sessions
+
+If You Get Nested Error Again
+
+### Force kill the old session
+tmux kill-session -t orchestrator
+
+### Now launch fresh
+orchestrator
+Or to unset the tmux variable temporarily:
+env -u TMUX orchestrator

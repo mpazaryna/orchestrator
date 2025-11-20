@@ -86,7 +86,12 @@ def load_skill(skill_name: str) -> dict:
     Returns:
         dict with skill metadata and content
     """
-    skill_path = Path(SKILLS_BASE_PATH) / skill_name
+    # Get skill config
+    skill_config = config_loader.get_skill(skill_name)
+    if not skill_config:
+        raise ValueError(f"Skill '{skill_name}' not found in config")
+
+    skill_path = Path(skill_config.path)
 
     if not skill_path.exists():
         raise ValueError(f"Skill '{skill_name}' not found at {skill_path}")
@@ -324,18 +329,8 @@ def process_repo_with_skill(repo_path: str, skill: dict, output_filename: str = 
         }
 
 def list_available_skills():
-    """List all available skills in the toolkit."""
-    skills_dir = Path(SKILLS_BASE_PATH)
-    if not skills_dir.exists():
-        print(f"Skills directory not found: {SKILLS_BASE_PATH}")
-        return []
-
-    skills = []
-    for item in sorted(skills_dir.iterdir()):
-        if item.is_dir() and (item / "SKILL.md").exists():
-            skills.append(item.name)
-
-    return skills
+    """List all available skills from config."""
+    return config_loader.list_skills()
 
 def main():
     """Main orchestrator function"""
@@ -388,6 +383,17 @@ def main():
         help="List all configured repository groups"
     )
     parser.add_argument(
+        "--list-agents",
+        action="store_true",
+        help="List all configured agents"
+    )
+    parser.add_argument(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Interactive mode - select skill and repositories from menus"
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -410,6 +416,71 @@ def main():
 
     # Determine execution mode
     use_agent = not args.simple
+
+    # Interactive mode
+    if args.interactive:
+        from .interactive_menu import main_interactive_menu
+        result = main_interactive_menu()
+        if result is None:
+            return 1
+
+        skill_config = result["skill"]
+        repo_configs = result["repositories"]
+        skill = load_skill(skill_config.name)
+        repos = [repo.path for repo in repo_configs]
+
+        print(f"\n▶ Running {len(repos)} repositories with '{skill_config.name}'...\n")
+
+        results = []
+        for repo_path in repos:
+            result = process_repo_with_skill(repo_path, skill, args.output, use_agent)
+            results.append(result)
+
+            # Print summary
+            status_emoji = "✅" if result["status"] == "success" else "❌"
+            print(f"{status_emoji} {result['repo']}")
+
+            if result["status"] == "success":
+                if result.get("mode") == "agent":
+                    print(f"   Iterations: {result.get('iterations', 'N/A')}")
+                    print(f"   Files: {len(result.get('files_created', []))}")
+                    if result.get('files_created'):
+                        print(f"   Created: {', '.join(result['files_created'][:3])}")
+                elif "output_file" in result:
+                    print(f"   Output: {result['output_file']}")
+            elif result["status"] == "error":
+                print(f"   Error: {result.get('message', 'Unknown error')}")
+
+        # Save results to JSON
+        output_file = Path.home() / f"orchestrator_{skill_config.name}_results.json"
+        with open(output_file, "w") as f:
+            json.dump(results, f, indent=2)
+
+        print(f"\n{'─'*60}")
+        print(f"✅ Complete! Results: {output_file}")
+        print(f"{'─'*60}\n")
+
+        return 0
+
+    # List agents if requested
+    if args.list_agents:
+        print("\nAvailable Agents:")
+        print("=" * 80)
+        agents = config_loader.list_agents()
+        if not agents:
+            print("  No agents configured")
+        else:
+            for agent_name in sorted(agents):
+                agent_config = config_loader.get_agent(agent_name)
+                tags = f" [{', '.join(agent_config.tags)}]" if agent_config.tags else ""
+                print(f"\n  {agent_name}")
+                print(f"    Description: {agent_config.description}")
+                print(f"    Type: {agent_config.type} | Version: {agent_config.version}{tags}")
+                print(f"    Capabilities: {', '.join(agent_config.capabilities)}")
+                print(f"    Use case: {agent_config.use_case}")
+        print(f"\nTotal: {len(agents)} agents configured")
+        print("=" * 80)
+        return
 
     # List repos if requested
     if args.list_repos:
@@ -438,12 +509,20 @@ def main():
     # List skills if requested
     if args.list_skills:
         print("\nAvailable Skills:")
-        print("=" * 60)
+        print("=" * 80)
         skills = list_available_skills()
-        for skill in skills:
-            print(f"  - {skill}")
-        print(f"\nTotal: {len(skills)} skills")
-        print("=" * 60)
+        if not skills:
+            print("  No skills configured")
+        else:
+            for skill_name in sorted(skills):
+                skill_config = config_loader.get_skill(skill_name)
+                tags = f" [{', '.join(skill_config.tags)}]" if skill_config.tags else ""
+                print(f"\n  {skill_name}")
+                print(f"    Description: {skill_config.description}")
+                print(f"    Mode: {skill_config.mode} | Version: {skill_config.version}{tags}")
+                print(f"    Output: {skill_config.output}")
+        print(f"\nTotal: {len(skills)} skills configured")
+        print("=" * 80)
         return
 
     # Load the skill

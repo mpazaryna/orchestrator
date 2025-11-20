@@ -1,0 +1,130 @@
+{
+  "skills": [
+    {
+      "name": "project-moc-generator",
+      "description": "Generate comprehensive Map of Content (MOC) documentation for software projects",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/project-moc-generator",
+      "mode": "agent",
+      "tags": ["documentation", "analysis", "architecture"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "docs/PROJECT_MOC.md and supporting documentation"
+    },
+    {
+      "name": "repo-summarizer",
+      "description": "Analyze repository and generate comprehensive PROJECT.md portfolio documentation",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/repo-summarizer",
+      "mode": "agent",
+      "tags": ["documentation", "portfolio", "summary"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "PROJECT.md portfolio document"
+    },
+    {
+      "name": "code-reviewer",
+      "description": "Review code for best practices, potential issues, and quality concerns",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/code-reviewer",
+      "mode": "agent",
+      "tags": ["review", "quality", "analysis"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "CODE_REVIEW.md analysis document"
+    },
+    {
+      "name": "commit-helper",
+      "description": "Generate clear, descriptive commit messages from git diffs",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/commit-helper",
+      "mode": "agent",
+      "tags": ["git", "productivity", "documentation"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "Commit message suggestions"
+    },
+    {
+      "name": "technical-decision",
+      "description": "Make evidence-based technical decisions with structured analysis and ADR generation",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/technical-decision",
+      "mode": "agent",
+      "tags": ["architecture", "decision-making", "analysis"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "Architecture Decision Records (ADRs)"
+    },
+    {
+      "name": "spike-driven-dev",
+      "description": "Structured spike development workflow for exploring technical unknowns",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/spike-driven-dev",
+      "mode": "agent",
+      "tags": ["development", "methodology", "research"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "Spike analysis and recommendations"
+    },
+    {
+      "name": "frontend-design",
+      "description": "Frontend design analysis and recommendations",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/frontend-design",
+      "mode": "agent",
+      "tags": ["design", "frontend", "ui"],
+      "repo_types": ["web", "frontend"],
+      "version": "1.0.0",
+      "output": "Design recommendations and analysis"
+    },
+    {
+      "name": "learn-project",
+      "description": "Learn and document project structure and key concepts",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/learn-project",
+      "mode": "agent",
+      "tags": ["learning", "documentation", "onboarding"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "Project learning documentation"
+    },
+    {
+      "name": "internal-comms",
+      "description": "Generate internal communications and documentation",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/internal-comms",
+      "mode": "agent",
+      "tags": ["communication", "documentation"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "Internal documentation and communication templates"
+    },
+    {
+      "name": "goose-recipes",
+      "description": "Goose recipe analysis and recommendations",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/goose-recipes",
+      "mode": "agent",
+      "tags": ["recipes", "cooking", "analysis"],
+      "repo_types": ["content"],
+      "version": "1.0.0",
+      "output": "Recipe analysis and recommendations"
+    },
+    {
+      "name": "goose-recipe-analysis",
+      "description": "Detailed goose recipe analysis and improvements",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/goose-recipe-analysis",
+      "mode": "agent",
+      "tags": ["recipes", "cooking", "analysis"],
+      "repo_types": ["content"],
+      "version": "1.0.0",
+      "output": "Recipe analysis documentation"
+    },
+    {
+      "name": "yoga-class-planner",
+      "description": "AI-powered yoga class planning and curriculum design",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/yoga-class-planner",
+      "mode": "agent",
+      "tags": ["yoga", "planning", "wellness"],
+      "repo_types": ["content"],
+      "version": "1.0.0",
+      "output": "Yoga class plans and curriculum"
+    }
+  ],
+  "metadata": {
+    "base_path": "/Users/mpaz/workspace/claude-toolkit/generated-skills",
+    "last_updated": "2025-11-20",
+    "total_skills": 12,
+    "execution_engine": "Claude Code autonomous agent"
+  }
+}

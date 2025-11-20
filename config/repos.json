@@ -23,11 +23,19 @@
       "description": "Generic orchestrator for Claude skills and agents",
       "tags": ["orchestrator", "agents", "claude"],
       "active": true
+    },
+    {
+      "name": "authentic-advantage",
+      "path": "/Users/mpaz/workspace/authentic-advantage",
+      "github": null,
+      "description": "Personal Branding Tool",
+      "tags": ["orchestrator", "agents", "claude"],
+      "active": true
     }
   ],
   "groups": {
-    "all": ["mcp-fleet", "rishi", "orchestrator"],
-    "production": ["mcp-fleet", "rishi"],
+    "all": ["mcp-fleet", "rishi", "orchestrator", "authentic-advantage"],
+    "production": ["mcp-fleet", "rishi", "authentic-advantage"],
     "development": ["orchestrator"]
   }
 }

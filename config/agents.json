@@ -1,0 +1,76 @@
+{
+  "agents": [
+    {
+      "name": "research-agent",
+      "description": "Systematic web research specialist for gathering and organizing documentation, technical specifications, and reference materials",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/research-agent",
+      "type": "autonomous",
+      "capabilities": [
+        "web-fetch",
+        "search",
+        "file-operations",
+        "structured-output",
+        "deduplication"
+      ],
+      "version": "1.0.0",
+      "tags": ["research", "documentation", "web"],
+      "output_dir": "ai_docs/research",
+      "use_case": "Fetch documentation, research topics, build knowledge bases"
+    },
+    {
+      "name": "research-docs-fetcher",
+      "description": "Specialized agent for fetching and organizing research documentation from multiple sources",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/research-docs-fetcher",
+      "type": "autonomous",
+      "capabilities": [
+        "web-fetch",
+        "document-parsing",
+        "file-operations",
+        "content-organization"
+      ],
+      "version": "1.0.0",
+      "tags": ["research", "documentation", "content"],
+      "output_dir": "ai_docs",
+      "use_case": "Fetch and organize documentation from URLs or search results"
+    },
+    {
+      "name": "quality-control-enforcer",
+      "description": "Ensures quality standards and consistency across projects and documentation",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/quality-control-enforcer",
+      "type": "autonomous",
+      "capabilities": [
+        "analysis",
+        "validation",
+        "reporting",
+        "enforcement",
+        "file-operations"
+      ],
+      "version": "1.0.0",
+      "tags": ["quality", "testing", "enforcement"],
+      "output_dir": "reports",
+      "use_case": "Verify quality standards, run validations, generate quality reports"
+    },
+    {
+      "name": "work-completion-summarizer",
+      "description": "Summarizes completed work and generates comprehensive work summaries",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/work-completion-summarizer",
+      "type": "autonomous",
+      "capabilities": [
+        "analysis",
+        "summarization",
+        "file-operations",
+        "report-generation"
+      ],
+      "version": "1.0.0",
+      "tags": ["summary", "documentation", "reporting"],
+      "output_dir": "reports",
+      "use_case": "Generate summaries of completed work, create status reports"
+    }
+  ],
+  "metadata": {
+    "base_path": "/Users/mpaz/workspace/claude-toolkit/generated-agents",
+    "last_updated": "2025-11-20",
+    "total_agents": 4,
+    "execution_engine": "Claude Code autonomous agent"
+  }
+}

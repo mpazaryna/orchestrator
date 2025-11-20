@@ -29,42 +29,129 @@ class RepoConfig:
         }
 
 
-class ConfigLoader:
-    """Loads and manages repository configuration."""
+class SkillConfig:
+    """Skill configuration."""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, data: Dict[str, Any]):
+        self.name = data["name"]
+        self.description = data.get("description", "")
+        self.path = data["path"]
+        self.mode = data.get("mode", "agent")
+        self.tags = data.get("tags", [])
+        self.repo_types = data.get("repo_types", ["any"])
+        self.version = data.get("version", "1.0.0")
+        self.output = data.get("output", "")
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "path": self.path,
+            "mode": self.mode,
+            "tags": self.tags,
+            "repo_types": self.repo_types,
+            "version": self.version,
+            "output": self.output
+        }
+
+
+class AgentConfig:
+    """Agent configuration."""
+
+    def __init__(self, data: Dict[str, Any]):
+        self.name = data["name"]
+        self.description = data.get("description", "")
+        self.path = data["path"]
+        self.type = data.get("type", "autonomous")
+        self.capabilities = data.get("capabilities", [])
+        self.version = data.get("version", "1.0.0")
+        self.tags = data.get("tags", [])
+        self.output_dir = data.get("output_dir", "")
+        self.use_case = data.get("use_case", "")
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "path": self.path,
+            "type": self.type,
+            "capabilities": self.capabilities,
+            "version": self.version,
+            "tags": self.tags,
+            "output_dir": self.output_dir,
+            "use_case": self.use_case
+        }
+
+
+class ConfigLoader:
+    """Loads and manages repository, skill, and agent configuration."""
+
+    def __init__(self, config_dir: Optional[str] = None):
         """
         Initialize config loader.
 
         Args:
-            config_path: Path to repos.json file. Defaults to repos.json in project root.
+            config_dir: Path to config directory. Defaults to config/ folder in project root.
         """
-        if config_path is None:
-            # Default to repos.json in project root
+        if config_dir is None:
+            # Default to config/ folder in project root
             project_root = Path(__file__).parent.parent.parent
-            config_path = project_root / "repos.json"
+            config_dir = project_root / "config"
 
-        self.config_path = Path(config_path)
-        self.config_data = self._load_config()
-        self.repositories = self._parse_repositories()
-        self.groups = self.config_data.get("groups", {})
+        self.config_dir = Path(config_dir)
 
-    def _load_config(self) -> Dict[str, Any]:
-        """Load configuration from JSON file."""
-        if not self.config_path.exists():
-            return {"repositories": [], "groups": {}}
+        # Load all configurations
+        self.repositories = self._load_repositories()
+        self.groups = self._load_groups()
+        self.skills = self._load_skills()
+        self.agents = self._load_agents()
 
-        with open(self.config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+    def _load_json(self, filename: str) -> Dict[str, Any]:
+        """Load a JSON config file from config directory."""
+        config_file = self.config_dir / filename
+        if not config_file.exists():
+            return {}
 
-    def _parse_repositories(self) -> Dict[str, RepoConfig]:
-        """Parse repository configurations."""
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not load {filename}: {e}")
+            return {}
+
+    def _load_repositories(self) -> Dict[str, RepoConfig]:
+        """Load repository configurations from repos.json."""
+        config_data = self._load_json("repos.json")
         repos = {}
-        for repo_data in self.config_data.get("repositories", []):
+        for repo_data in config_data.get("repositories", []):
             repo = RepoConfig(repo_data)
             repos[repo.name] = repo
         return repos
 
+    def _load_groups(self) -> Dict[str, List[str]]:
+        """Load repository groups from repos.json."""
+        config_data = self._load_json("repos.json")
+        return config_data.get("groups", {})
+
+    def _load_skills(self) -> Dict[str, SkillConfig]:
+        """Load skill configurations from skills.json."""
+        config_data = self._load_json("skills.json")
+        skills = {}
+        for skill_data in config_data.get("skills", []):
+            skill = SkillConfig(skill_data)
+            skills[skill.name] = skill
+        return skills
+
+    def _load_agents(self) -> Dict[str, AgentConfig]:
+        """Load agent configurations from agents.json."""
+        config_data = self._load_json("agents.json")
+        agents = {}
+        for agent_data in config_data.get("agents", []):
+            agent = AgentConfig(agent_data)
+            agents[agent.name] = agent
+        return agents
+
+    # Repository methods
     def get_repo(self, name: str) -> Optional[RepoConfig]:
         """Get repository by name."""
         return self.repositories.get(name)
@@ -107,3 +194,25 @@ class ConfigLoader:
             repos = [r for r in repos if r is not None]
 
         return [repo.path for repo in repos]
+
+    # Skill methods
+    def get_skill(self, name: str) -> Optional[SkillConfig]:
+        """Get skill by name."""
+        return self.skills.get(name)
+
+    def list_skills(self) -> List[str]:
+        """List all available skill names."""
+        return list(self.skills.keys())
+
+    def get_skills_by_tag(self, tag: str) -> List[SkillConfig]:
+        """Get skills with a specific tag."""
+        return [skill for skill in self.skills.values() if tag in skill.tags]
+
+    # Agent methods
+    def get_agent(self, name: str) -> Optional[AgentConfig]:
+        """Get agent by name."""
+        return self.agents.get(name)
+
+    def list_agents(self) -> List[str]:
+        """List all available agent names."""
+        return list(self.agents.keys())
