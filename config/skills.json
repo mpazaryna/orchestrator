@@ -119,12 +119,22 @@
       "repo_types": ["content"],
       "version": "1.0.0",
       "output": "Yoga class plans and curriculum"
+    },
+    {
+      "name": "journal",
+      "description": "Generate comprehensive journal entries from git commit history with minimal user input",
+      "path": "/Users/mpaz/workspace/claude-toolkit/.claude/skills/journal",
+      "mode": "agent",
+      "tags": ["documentation", "git", "productivity", "learning"],
+      "repo_types": ["any"],
+      "version": "1.0.0",
+      "output": "docs/journal/YYYY-MM-DD-HHMM-slug.md"
     }
   ],
   "metadata": {
     "base_path": "/Users/mpaz/workspace/claude-toolkit/generated-skills",
     "last_updated": "2025-11-20",
-    "total_skills": 12,
+    "total_skills": 13,
     "execution_engine": "Claude Code autonomous agent"
   }
 }
