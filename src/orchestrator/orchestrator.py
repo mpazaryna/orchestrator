@@ -13,6 +13,7 @@ from datetime import datetime
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from .agent_runner import AgentRunner
+from .config import ConfigLoader
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,11 +21,8 @@ load_dotenv()
 # Configuration
 SKILLS_BASE_PATH = "/Users/mpaz/workspace/claude-toolkit/generated-skills"
 
-# Default repositories (can be overridden via config or CLI)
-DEFAULT_REPOS = [
-    "/Users/mpaz/workspace/mcp-fleet",
-    "/Users/mpaz/workspace/rishi",
-]
+# Config loader (will load from repos.json)
+config_loader = ConfigLoader()
 
 # Initialize Anthropic client
 api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -360,7 +358,34 @@ def main():
         "--repos",
         "-r",
         nargs="+",
-        help="Repository paths to process (overrides default)"
+        help="Repository paths to process (overrides config)"
+    )
+    parser.add_argument(
+        "--repo-names",
+        nargs="+",
+        help="Repository names from repos.json to process"
+    )
+    parser.add_argument(
+        "--group",
+        "-g",
+        type=str,
+        help="Process all repositories in a group from repos.json"
+    )
+    parser.add_argument(
+        "--tag",
+        "-t",
+        type=str,
+        help="Process all repositories with a specific tag"
+    )
+    parser.add_argument(
+        "--list-repos",
+        action="store_true",
+        help="List all configured repositories"
+    )
+    parser.add_argument(
+        "--list-groups",
+        action="store_true",
+        help="List all configured repository groups"
     )
     parser.add_argument(
         "--output",
@@ -386,6 +411,30 @@ def main():
     # Determine execution mode
     use_agent = not args.simple
 
+    # List repos if requested
+    if args.list_repos:
+        print("\nConfigured Repositories:")
+        print("=" * 60)
+        for repo in config_loader.get_active_repos():
+            status = "✓" if repo.active else "✗"
+            github = f" ({repo.github})" if repo.github else ""
+            tags = f" [{', '.join(repo.tags)}]" if repo.tags else ""
+            print(f"  {status} {repo.name:<20} {repo.path}{github}{tags}")
+        print(f"\nTotal: {len(config_loader.list_repos())} repositories")
+        print("=" * 60)
+        return
+
+    # List groups if requested
+    if args.list_groups:
+        print("\nConfigured Groups:")
+        print("=" * 60)
+        for group_name in config_loader.list_groups():
+            repos = config_loader.get_group(group_name)
+            repo_names = [r.name for r in repos]
+            print(f"  {group_name}: {', '.join(repo_names)}")
+        print("=" * 60)
+        return
+
     # List skills if requested
     if args.list_skills:
         print("\nAvailable Skills:")
@@ -406,7 +455,25 @@ def main():
         return 1
 
     # Determine repositories to process
-    repos = args.repos if args.repos else DEFAULT_REPOS
+    repos = []
+
+    if args.repos:
+        # Direct paths provided via CLI
+        repos = args.repos
+    elif args.repo_names:
+        # Repository names from config
+        repos = config_loader.get_repo_paths(args.repo_names)
+    elif args.group:
+        # Group from config
+        group_repos = config_loader.get_group(args.group)
+        repos = [r.path for r in group_repos]
+    elif args.tag:
+        # Tag from config
+        tagged_repos = config_loader.get_repos_by_tag(args.tag)
+        repos = [r.path for r in tagged_repos]
+    else:
+        # Default: all active repos from config
+        repos = config_loader.get_repo_paths()
 
     print(f"\nGeneric Orchestrator - Starting at {datetime.now()}")
     print(f"Skill: {skill['name']}")

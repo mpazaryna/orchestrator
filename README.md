@@ -38,19 +38,34 @@ ANTHROPIC_API_KEY=sk-ant-api03-...
 
 Get your API key from: https://console.anthropic.com/settings/keys
 
-### 3. (Optional) Configure Default Repository Paths
+### 3. Configure Your Repositories
 
-Edit `orchestrator.py` and update the `DEFAULT_REPOS` list with your commonly-used repository paths:
+Edit `repos.json` to add your repositories:
 
-```python
-DEFAULT_REPOS = [
-    "/Users/mpaz/workspace/mcp-fleet",
-    "/Users/mpaz/workspace/rishi",
-    # Add more repo paths here
-]
+```json
+{
+  "repositories": [
+    {
+      "name": "my-app",
+      "path": "/Users/you/projects/my-app",
+      "github": "https://github.com/you/my-app",
+      "description": "My awesome application",
+      "tags": ["web", "python"],
+      "active": true
+    }
+  ],
+  "groups": {
+    "all": ["my-app"],
+    "production": ["my-app"]
+  }
+}
 ```
 
-Or pass repositories via the `--repos` flag (see Usage below).
+See all configured repos:
+```bash
+uv run python orchestrator.py --list-repos
+uv run python orchestrator.py --list-groups
+```
 
 ## Usage
 
@@ -65,10 +80,19 @@ uv run python orchestrator.py --list-skills
 ### Run with Default Skill (repo-summarizer)
 
 ```bash
-# Run on default repositories
+# Run on all active repositories from config
 uv run python orchestrator.py
 
-# Run on specific repositories
+# Run on specific repository group
+uv run python orchestrator.py --group production
+
+# Run on repositories by name
+uv run python orchestrator.py --repo-names mcp-fleet rishi
+
+# Run on repositories with specific tag
+uv run python orchestrator.py --tag ai
+
+# Run on specific paths (bypasses config)
 uv run python orchestrator.py --repos /path/to/repo1 /path/to/repo2
 ```
 

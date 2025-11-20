@@ -1,0 +1,33 @@
+{
+  "repositories": [
+    {
+      "name": "mcp-fleet",
+      "path": "/Users/mpaz/workspace/mcp-fleet",
+      "github": "https://github.com/mpaz/mcp-fleet",
+      "description": "MCP Fleet - Model Context Protocol servers",
+      "tags": ["mcp", "servers", "monorepo"],
+      "active": true
+    },
+    {
+      "name": "rishi",
+      "path": "/Users/mpaz/workspace/rishi",
+      "github": "https://github.com/mpaz/rishi",
+      "description": "The Yoga Genome - AI-powered yoga class planner",
+      "tags": ["yoga", "ai", "openai"],
+      "active": true
+    },
+    {
+      "name": "orchestrator",
+      "path": "/Users/mpaz/workspace/orchestrator",
+      "github": null,
+      "description": "Generic orchestrator for Claude skills and agents",
+      "tags": ["orchestrator", "agents", "claude"],
+      "active": true
+    }
+  ],
+  "groups": {
+    "all": ["mcp-fleet", "rishi", "orchestrator"],
+    "production": ["mcp-fleet", "rishi"],
+    "development": ["orchestrator"]
+  }
+}
