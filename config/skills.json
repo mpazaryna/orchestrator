@@ -129,12 +129,22 @@
       "repo_types": ["any"],
       "version": "1.0.0",
       "output": "docs/journal/YYYY-MM-DD-HHMM-slug.md"
+    },
+    {
+      "name": "synth-notes",
+      "description": "Generate synthetic clinical SOAP notes for training datasets",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-skills/synth-notes",
+      "mode": "agent",
+      "tags": ["healthcare", "data-generation", "synthetic-data", "clinical"],
+      "repo_types": ["healthcare"],
+      "version": "1.0.0",
+      "output": "Batch folder with generated SOAP notes in synthetic-notes/output/"
     }
   ],
   "metadata": {
     "base_path": "/Users/mpaz/workspace/claude-toolkit/generated-skills",
     "last_updated": "2025-11-20",
-    "total_skills": 13,
+    "total_skills": 14,
     "execution_engine": "Claude Code autonomous agent"
   }
 }

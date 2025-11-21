@@ -65,12 +65,45 @@
       "tags": ["summary", "documentation", "reporting"],
       "output_dir": "reports",
       "use_case": "Generate summaries of completed work, create status reports"
+    },
+    {
+      "name": "synth-notes-generator",
+      "description": "Autonomous Python agent for generating synthetic clinical SOAP notes",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/synth-notes-generator",
+      "type": "python",
+      "capabilities": [
+        "prompt-loading",
+        "api-calls",
+        "file-operations",
+        "batch-processing",
+        "cost-tracking"
+      ],
+      "version": "1.0.0",
+      "tags": ["healthcare", "data-generation", "synthetic-data", "clinical"],
+      "output_dir": "synthetic-notes/output",
+      "use_case": "Generate realistic chiropractic SOAP notes for clinical training datasets"
+    },
+    {
+      "name": "github-pm-analyzer",
+      "description": "Autonomous agent for GitHub project management analysis - trends, activity reports, and repository sync",
+      "path": "/Users/mpaz/workspace/claude-toolkit/generated-agents/github-pm-analyzer",
+      "type": "python",
+      "capabilities": [
+        "trend-analysis",
+        "daily-activity",
+        "repo-sync",
+        "issue-tracking"
+      ],
+      "version": "1.0.0",
+      "tags": ["github", "project-management", "analytics", "reporting"],
+      "output_dir": "github-pm/reports",
+      "use_case": "Analyze GitHub issues, commits, and repository activity across multiple repos"
     }
   ],
   "metadata": {
     "base_path": "/Users/mpaz/workspace/claude-toolkit/generated-agents",
-    "last_updated": "2025-11-20",
-    "total_agents": 4,
-    "execution_engine": "Claude Code autonomous agent"
+    "last_updated": "2025-11-21",
+    "total_agents": 6,
+    "execution_engine": "Claude Code autonomous agent + Python agents"
   }
 }

@@ -31,11 +31,20 @@
       "description": "Personal Branding Tool",
       "tags": ["orchestrator", "agents", "claude"],
       "active": true
+    },
+    {
+      "name": "synthetic-notes",
+      "path": "/Users/mpaz/workspace/synthetic-notes",
+      "github": "https://github.com/mpazaryna/synthetic-notes",
+      "description": "Generate synthetic chiropractic SOAP notes for clinical training datasets",
+      "tags": ["healthcare", "data-generation", "clinical", "ai"],
+      "active": true
     }
   ],
   "groups": {
-    "all": ["mcp-fleet", "rishi", "orchestrator", "authentic-advantage"],
+    "all": ["mcp-fleet", "rishi", "orchestrator", "authentic-advantage", "synthetic-notes"],
     "production": ["mcp-fleet", "rishi", "authentic-advantage"],
-    "development": ["orchestrator"]
+    "development": ["orchestrator"],
+    "healthcare": ["synthetic-notes"]
   }
 }
