@@ -7,7 +7,9 @@
       "mcp__orchestrator__list_agents",
       "Bash(npm install:*)",
       "Read(//Users/mpaz/workspace/claude-toolkit/**)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Read(//Users/mpaz/workspace/joe/resin-platform/**)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
