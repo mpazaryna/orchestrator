@@ -1,0 +1,29 @@
+{
+  "description": "Example task configuration for autonomous orchestrator execution",
+  "tasks": [
+    {
+      "name": "Generate READMEs for all repos",
+      "skill": "readme-generator",
+      "group": "all",
+      "enabled": true
+    },
+    {
+      "name": "Summarize production repos",
+      "skill": "repo-summarizer",
+      "group": "production",
+      "enabled": true
+    },
+    {
+      "name": "Review specific repos",
+      "skill": "code-reviewer",
+      "repos": ["/Users/mpaz/workspace/mcp-fleet", "/Users/mpaz/workspace/rishi"],
+      "enabled": false
+    }
+  ],
+  "settings": {
+    "parallel": true,
+    "max_workers": 5,
+    "simple_mode": true,
+    "log_file": "~/.orchestrator/logs/run.log"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "description": "Overnight documentation update run",
+  "tasks": [
+    {
+      "name": "Update all READMEs",
+      "skill": "readme-generator",
+      "group": "all",
+      "enabled": true
+    },
+    {
+      "name": "Update PROJECT.md files",
+      "skill": "repo-summarizer",
+      "group": "all",
+      "enabled": true
+    },
+    {
+      "name": "Generate journal entries",
+      "skill": "journal",
+      "group": "all",
+      "enabled": true
+    }
+  ],
+  "settings": {
+    "parallel": true,
+    "max_workers": 5,
+    "simple_mode": true,
+    "log_file": "~/.orchestrator/logs/overnight.log"
+  }
+}

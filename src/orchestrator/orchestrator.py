@@ -8,6 +8,7 @@ import subprocess
 import json
 import os
 import argparse
+import sys
 from pathlib import Path
 from datetime import datetime
 from anthropic import Anthropic
@@ -15,6 +16,7 @@ from dotenv import load_dotenv
 from .agent_runner import AgentRunner
 from .python_agent_runner import PythonAgentRunner
 from .config import ConfigLoader
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Load environment variables from .env file
 load_dotenv()
@@ -481,8 +483,150 @@ def main():
         type=int,
         help="For github-pm-analyzer: days to analyze"
     )
+    parser.add_argument(
+        "--parallel",
+        "-p",
+        action="store_true",
+        default=True,
+        help="Process repositories in parallel (default: True)"
+    )
+    parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="Process repositories sequentially instead of in parallel"
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=5,
+        help="Maximum parallel workers (default: 5)"
+    )
+    parser.add_argument(
+        "--config",
+        "-c",
+        type=str,
+        help="Task configuration file (JSON) for autonomous execution"
+    )
+    parser.add_argument(
+        "--log-file",
+        type=str,
+        help="Log file path for autonomous execution (default: stdout)"
+    )
 
     args = parser.parse_args()
+
+    # Setup logging if log file specified
+    if args.log_file:
+        log_path = Path(args.log_file).expanduser()
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_file = open(log_path, 'a')
+        sys.stdout = log_file
+        sys.stderr = log_file
+        print(f"\n{'='*60}")
+        print(f"Orchestrator Run Started: {datetime.now()}")
+        print(f"{'='*60}\n")
+
+    # Handle task configuration file for autonomous execution
+    if args.config:
+        config_path = Path(args.config).expanduser()
+        if not config_path.exists():
+            print(f"Error: Config file not found: {config_path}")
+            return 1
+
+        with open(config_path) as f:
+            task_config = json.load(f)
+
+        print(f"Loading task configuration: {config_path}")
+        print(f"Description: {task_config.get('description', 'N/A')}\n")
+
+        settings = task_config.get('settings', {})
+        use_parallel = settings.get('parallel', True)
+        max_workers = settings.get('max_workers', 5)
+        use_simple_mode = settings.get('simple_mode', True)
+
+        all_results = []
+
+        for task in task_config.get('tasks', []):
+            if not task.get('enabled', True):
+                print(f"⏭ Skipping disabled task: {task['name']}\n")
+                continue
+
+            print(f"\n{'='*60}")
+            print(f"Task: {task['name']}")
+            print(f"Skill: {task['skill']}")
+            print(f"{'='*60}\n")
+
+            try:
+                skill = load_skill(task['skill'])
+            except ValueError as e:
+                print(f"❌ Error loading skill: {e}\n")
+                continue
+
+            # Determine repos
+            repos = []
+            if 'group' in task:
+                group_repos = config_loader.get_group(task['group'])
+                repos = [r.path for r in group_repos]
+            elif 'tag' in task:
+                tagged_repos = config_loader.get_repos_by_tag(task['tag'])
+                repos = [r.path for r in tagged_repos]
+            elif 'repos' in task:
+                repos = task['repos']
+            elif 'repo_names' in task:
+                repos = config_loader.get_repo_paths(task['repo_names'])
+
+            if not repos:
+                print(f"⚠ No repositories found for task\n")
+                continue
+
+            print(f"Processing {len(repos)} repositories...")
+            print(f"Mode: {'Parallel' if use_parallel else 'Sequential'}")
+            print(f"Agent Mode: {'Simple' if use_simple_mode else 'Full'}\n")
+
+            results = []
+
+            if use_parallel and len(repos) > 1:
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                    future_to_repo = {
+                        executor.submit(process_repo_with_skill, repo_path, skill, None, not use_simple_mode): repo_path
+                        for repo_path in repos
+                    }
+
+                    for future in as_completed(future_to_repo):
+                        try:
+                            result = future.result()
+                            results.append(result)
+                            status = "✅" if result["status"] == "success" else "❌"
+                            print(f"{status} {result['repo']}")
+                        except Exception as e:
+                            print(f"❌ Exception: {e}")
+            else:
+                for repo_path in repos:
+                    result = process_repo_with_skill(repo_path, skill, None, not use_simple_mode)
+                    results.append(result)
+                    status = "✅" if result["status"] == "success" else "❌"
+                    print(f"{status} {result['repo']}")
+
+            all_results.extend(results)
+
+            # Task summary
+            success_count = sum(1 for r in results if r['status'] == 'success')
+            print(f"\nTask Complete: {success_count}/{len(results)} successful\n")
+
+        # Save overall results
+        output_file = Path.home() / f"orchestrator_batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        with open(output_file, "w") as f:
+            json.dump(all_results, f, indent=2)
+
+        print(f"\n{'='*60}")
+        print(f"All Tasks Complete!")
+        print(f"Results saved to: {output_file}")
+        print(f"{'='*60}\n")
+
+        if args.log_file:
+            log_file.close()
+
+        return 0
 
     # Handle direct Python agent execution
     if args.run_agent:
@@ -653,32 +797,72 @@ def main():
         # Default: all active repos from config
         repos = config_loader.get_repo_paths()
 
+    # Determine if running in parallel or sequential mode
+    run_parallel = not args.sequential
+
     print(f"\nGeneric Orchestrator - Starting at {datetime.now()}")
     print(f"Skill: {skill['name']}")
     print(f"Mode: {'Agent (with tool use)' if use_agent else 'Simple (prompt only)'}")
+    print(f"Execution: {'Parallel' if run_parallel else 'Sequential'}")
     print(f"Will process {len(repos)} repositories\n")
 
     results = []
 
-    for repo_path in repos:
-        result = process_repo_with_skill(repo_path, skill, args.output, use_agent)
-        results.append(result)
+    if run_parallel and len(repos) > 1:
+        # Parallel execution using ThreadPoolExecutor
+        print(f"Running {len(repos)} repositories in parallel (max {args.max_workers} workers)...\n")
 
-        # Print summary
-        status_emoji = "Success" if result["status"] == "success" else "Failed"
-        print(f"\n{status_emoji}: {result['repo']} - {result['status']}")
+        with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+            # Submit all jobs
+            future_to_repo = {
+                executor.submit(process_repo_with_skill, repo_path, skill, args.output, use_agent): repo_path
+                for repo_path in repos
+            }
 
-        if result["status"] == "success":
-            if result.get("mode") == "agent":
-                print(f"  Iterations: {result.get('iterations', 'N/A')}")
-                print(f"  Files created: {len(result.get('files_created', []))}")
-                print(f"  Tool uses: {result.get('tool_uses_count', 'N/A')}")
-                if result.get('files_created'):
-                    print(f"  Created: {', '.join(result['files_created'][:5])}")
-            elif "output_file" in result:
-                print(f"  Output created at: {result['output_file']}")
-        elif result["status"] == "error":
-            print(f"  Error: {result.get('message', 'Unknown error')}")
+            # Collect results as they complete
+            for future in as_completed(future_to_repo):
+                repo_path = future_to_repo[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+
+                    # Print summary
+                    status_emoji = "✅" if result["status"] == "success" else "❌"
+                    print(f"{status_emoji} {result['repo']} - {result['status']}")
+
+                    if result["status"] == "success":
+                        if result.get("mode") == "agent":
+                            print(f"   Iterations: {result.get('iterations', 'N/A')}")
+                            print(f"   Files created: {len(result.get('files_created', []))}")
+                            if result.get('files_created'):
+                                print(f"   Created: {', '.join(result['files_created'][:3])}")
+                        elif "output_file" in result:
+                            print(f"   Output: {result['output_file']}")
+                    elif result["status"] == "error":
+                        print(f"   Error: {result.get('message', 'Unknown error')}")
+                except Exception as e:
+                    print(f"❌ {Path(repo_path).name} - Exception: {e}")
+    else:
+        # Sequential execution (original behavior)
+        for repo_path in repos:
+            result = process_repo_with_skill(repo_path, skill, args.output, use_agent)
+            results.append(result)
+
+            # Print summary
+            status_emoji = "Success" if result["status"] == "success" else "Failed"
+            print(f"\n{status_emoji}: {result['repo']} - {result['status']}")
+
+            if result["status"] == "success":
+                if result.get("mode") == "agent":
+                    print(f"  Iterations: {result.get('iterations', 'N/A')}")
+                    print(f"  Files created: {len(result.get('files_created', []))}")
+                    print(f"  Tool uses: {result.get('tool_uses_count', 'N/A')}")
+                    if result.get('files_created'):
+                        print(f"  Created: {', '.join(result['files_created'][:5])}")
+                elif "output_file" in result:
+                    print(f"  Output created at: {result['output_file']}")
+            elif result["status"] == "error":
+                print(f"  Error: {result.get('message', 'Unknown error')}")
 
     # Save results to JSON
     output_file = Path.home() / f"orchestrator_{skill['name']}_results.json"

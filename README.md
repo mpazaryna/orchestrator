@@ -5,7 +5,8 @@ A flexible Python orchestrator that runs **any skill** from your Claude toolkit 
 ## Features
 
 - **Skill-Agnostic**: Run any skill from your toolkit (repo-summarizer, code-reviewer, etc.)
-- **Batch Processing**: Analyze multiple repositories in a single run
+- **Parallel Execution**: Process multiple repositories simultaneously for fast completion
+- **Batch Processing**: Analyze multiple repositories in a single command
 - **Flexible Configuration**: CLI arguments for skill selection, custom repos, and output files
 - **Smart Defaults**: Sensible defaults with easy overrides
 - **Uses Claude API (Sonnet 4)**: Intelligent code analysis and generation
@@ -109,13 +110,90 @@ uv run python orchestrator.py --skill project-moc-generator --repos /path/to/rep
 uv run python orchestrator.py --skill code-reviewer --repos /path/to/repo --output review.md
 ```
 
+### Interactive Mode (via Claude Code)
+
+When working in Claude Code, the orchestrator acts as a subagent:
+
+```bash
+cd ~/workspace/orchestrator
+claude
+
+> "Run repo-summarizer across all my repos"
+```
+
+### CLI Mode (Direct Execution)
+
+**Fast parallel processing:**
+
+```bash
+# Process all repos in parallel (default behavior)
+uv run python orchestrator.py --skill repo-summarizer --group all
+
+# All 5 repos processed simultaneously - completes in ~1-2 minutes
+```
+
+**Control parallelism:**
+
+```bash
+# Sequential processing (if needed)
+uv run python orchestrator.py --skill repo-summarizer --group all --sequential
+
+# Customize max parallel workers (default: 5)
+uv run python orchestrator.py --skill repo-summarizer --group all --max-workers 10
+```
+
+### Autonomous Mode (Unattended Execution)
+
+**For overnight runs, cron jobs, or distributed execution:**
+
+```bash
+# Run task configuration in background
+nohup uv run python orchestrator.py --config config/overnight.json &
+
+# Check progress
+tail -f ~/.orchestrator/logs/overnight.log
+```
+
+**Task configuration example (config/overnight.json):**
+```json
+{
+  "description": "Overnight documentation update",
+  "tasks": [
+    {"name": "Update READMEs", "skill": "readme-generator", "group": "all", "enabled": true},
+    {"name": "Update PROJECT.md", "skill": "repo-summarizer", "group": "all", "enabled": true}
+  ],
+  "settings": {
+    "parallel": true,
+    "simple_mode": true,
+    "log_file": "~/.orchestrator/logs/overnight.log"
+  }
+}
+```
+
+See [docs/AUTONOMOUS_MODE.md](docs/AUTONOMOUS_MODE.md) for complete guide.
+
 ### Command-Line Options
 
 ```
+# Execution modes
+--simple           Run in simple prompt mode (fast, single API call per repo)
+--sequential       Process repositories one at a time instead of in parallel
+--max-workers N    Maximum parallel workers (default: 5)
+
+# Repository selection
 --skill, -s        Skill name to run (default: repo-summarizer)
 --repos, -r        Repository paths (space-separated)
+--repo-names       Repository names from config
+--group, -g        Process repository group
+--tag, -t          Process repositories by tag
+
+# Other options
 --output, -o       Custom output filename
 --list-skills      List all available skills
+--list-repos       List configured repositories
+--list-groups      List repository groups
+--list-agents      List available agents
+--interactive, -i  Interactive menu mode
 ```
 
 ## How It Works
