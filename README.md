@@ -6,255 +6,68 @@ A flexible Python orchestrator that runs **any skill** from your Claude toolkit 
 
 - **Skill-Agnostic**: Run any skill from your toolkit (repo-summarizer, code-reviewer, etc.)
 - **Parallel Execution**: Process multiple repositories simultaneously for fast completion
-- **Batch Processing**: Analyze multiple repositories in a single command
-- **Flexible Configuration**: CLI arguments for skill selection, custom repos, and output files
+- **Three Operational Modes**: Interactive (with Claude Code), CLI (direct), and Autonomous (unattended)
+- **Task Configuration**: JSON-based task definitions for overnight runs and cron jobs
+- **Flexible Repository Selection**: By name, group, tag, or path
 - **Smart Defaults**: Sensible defaults with easy overrides
-- **Uses Claude API (Sonnet 4)**: Intelligent code analysis and generation
-- **Comprehensive Context**: Collects repository structure, README, package files
-- **Tracking**: Saves results to JSON for auditing and monitoring
 
-## Setup
-
-### 1. Install Dependencies
-
-This project uses `uv` for dependency management:
+## Quick Start
 
 ```bash
+# Install dependencies
 uv sync
-```
 
-### 2. Set Your Anthropic API Key
-
-Copy the example environment file and add your API key:
-
-```bash
+# Set up your API key
 cp .env.example .env
-```
+# Edit .env and add your ANTHROPIC_API_KEY
 
-Then edit `.env` and replace `your-api-key-here` with your actual Anthropic API key:
+# Configure repositories in repos.json
+# See docs/guide/REPOSITORY_CONFIG.md
 
-```bash
-ANTHROPIC_API_KEY=sk-ant-api03-...
-```
-
-Get your API key from: https://console.anthropic.com/settings/keys
-
-### 3. Configure Your Repositories
-
-Edit `repos.json` to add your repositories:
-
-```json
-{
-  "repositories": [
-    {
-      "name": "my-app",
-      "path": "/Users/you/projects/my-app",
-      "github": "https://github.com/you/my-app",
-      "description": "My awesome application",
-      "tags": ["web", "python"],
-      "active": true
-    }
-  ],
-  "groups": {
-    "all": ["my-app"],
-    "production": ["my-app"]
-  }
-}
-```
-
-See all configured repos:
-```bash
-uv run python orchestrator.py --list-repos
-uv run python orchestrator.py --list-groups
-```
-
-## Usage
-
-### List Available Skills
-
-See all skills in your toolkit:
-
-```bash
-uv run python orchestrator.py --list-skills
-```
-
-### Run with Default Skill (repo-summarizer)
-
-```bash
-# Run on all active repositories from config
+# Run on all active repos
 uv run python orchestrator.py
 
-# Run on specific repository group
-uv run python orchestrator.py --group production
-
-# Run on repositories by name
-uv run python orchestrator.py --repo-names mcp-fleet rishi
-
-# Run on repositories with specific tag
-uv run python orchestrator.py --tag ai
-
-# Run on specific paths (bypasses config)
-uv run python orchestrator.py --repos /path/to/repo1 /path/to/repo2
+# Run specific skill
+uv run python orchestrator.py --skill code-reviewer --group production
 ```
 
-### Run a Different Skill
+## Documentation
 
-```bash
-# Run code-reviewer on a repository
-uv run python orchestrator.py --skill code-reviewer --repos /path/to/repo
+### Getting Started
+- [Installation & Setup](docs/guide/GETTING_STARTED.md) - Install dependencies, configure API key and repositories
+- [Repository Configuration](docs/guide/REPOSITORY_CONFIG.md) - Configure repos.json with groups and tags
 
-# Run project-moc-generator
-uv run python orchestrator.py --skill project-moc-generator --repos /path/to/repo
+### Usage
+- [Usage Modes](docs/guide/USAGE_MODES.md) - Interactive, CLI, and Autonomous modes
+- [CLI Reference](docs/guide/CLI_REFERENCE.md) - Complete command-line options
+- [Example Workflows](docs/guide/EXAMPLES.md) - Common use cases and patterns
+- [Autonomous Mode](docs/AUTONOMOUS_MODE.md) - Overnight runs, cron jobs, CI/CD integration
 
-# Custom output filename
-uv run python orchestrator.py --skill code-reviewer --repos /path/to/repo --output review.md
-```
+## Three Operational Modes
 
-### Interactive Mode (via Claude Code)
-
-When working in Claude Code, the orchestrator acts as a subagent:
-
+### 1. Interactive Mode (with Claude Code)
 ```bash
 cd ~/workspace/orchestrator
 claude
-
 > "Run repo-summarizer across all my repos"
 ```
 
-### CLI Mode (Direct Execution)
-
-**Fast parallel processing:**
-
+### 2. CLI Mode (Direct Execution)
 ```bash
-# Process all repos in parallel (default behavior)
+# Fast parallel processing
 uv run python orchestrator.py --skill repo-summarizer --group all
 
-# All 5 repos processed simultaneously - completes in ~1-2 minutes
+# Sequential processing
+uv run python orchestrator.py --sequential --repos /path/to/repo
 ```
 
-**Control parallelism:**
-
+### 3. Autonomous Mode (Unattended)
 ```bash
-# Sequential processing (if needed)
-uv run python orchestrator.py --skill repo-summarizer --group all --sequential
-
-# Customize max parallel workers (default: 5)
-uv run python orchestrator.py --skill repo-summarizer --group all --max-workers 10
-```
-
-### Autonomous Mode (Unattended Execution)
-
-**For overnight runs, cron jobs, or distributed execution:**
-
-```bash
-# Run task configuration in background
+# Overnight runs with task configuration
 nohup uv run python orchestrator.py --config config/overnight.json &
 
-# Check progress
+# Monitor progress
 tail -f ~/.orchestrator/logs/overnight.log
-```
-
-**Task configuration example (config/overnight.json):**
-```json
-{
-  "description": "Overnight documentation update",
-  "tasks": [
-    {"name": "Update READMEs", "skill": "readme-generator", "group": "all", "enabled": true},
-    {"name": "Update PROJECT.md", "skill": "repo-summarizer", "group": "all", "enabled": true}
-  ],
-  "settings": {
-    "parallel": true,
-    "simple_mode": true,
-    "log_file": "~/.orchestrator/logs/overnight.log"
-  }
-}
-```
-
-See [docs/AUTONOMOUS_MODE.md](docs/AUTONOMOUS_MODE.md) for complete guide.
-
-### Command-Line Options
-
-```
-# Execution modes
---simple           Run in simple prompt mode (fast, single API call per repo)
---sequential       Process repositories one at a time instead of in parallel
---max-workers N    Maximum parallel workers (default: 5)
-
-# Repository selection
---skill, -s        Skill name to run (default: repo-summarizer)
---repos, -r        Repository paths (space-separated)
---repo-names       Repository names from config
---group, -g        Process repository group
---tag, -t          Process repositories by tag
-
-# Other options
---output, -o       Custom output filename
---list-skills      List all available skills
---list-repos       List configured repositories
---list-groups      List repository groups
---list-agents      List available agents
---interactive, -i  Interactive menu mode
-```
-
-## How It Works
-
-For each repository, the orchestrator:
-
-1. **Loads the Skill**:
-   - Reads SKILL.md from your toolkit
-   - Loads optional template files if available
-   - Prepares skill-specific instructions
-
-2. **Collects Context**:
-   - Repository file structure (up to 100 files)
-   - README.md content
-   - Package manifests (package.json, pyproject.toml, requirements.txt, etc.)
-
-3. **Executes with Claude**:
-   - Uses Claude Sonnet 4 to run the skill
-   - Passes repository context and skill definition
-   - Generates output according to skill specifications
-
-4. **Saves Results**:
-   - Writes output to each repository (e.g., PROJECT.md, code-review.md)
-   - Saves summary to ~/orchestrator_{skill-name}_results.json
-
-## Available Skills
-
-Your toolkit includes 12+ skills:
-
-- **repo-summarizer**: Generate professional PROJECT.md portfolio documentation
-- **code-reviewer**: Review code for best practices and potential issues
-- **project-moc-generator**: Create Map of Content for projects
-- **commit-helper**: Assist with commit message generation
-- **technical-decision**: Document technical decisions
-- **spike-driven-dev**: Guide spike-driven development
-- And more! Use `--list-skills` to see all
-
-## Example Workflows
-
-### Portfolio Generation
-
-```bash
-# Generate PROJECT.md for all your projects
-uv run python orchestrator.py --skill repo-summarizer --repos \
-  ~/projects/app1 ~/projects/app2 ~/projects/lib1
-```
-
-### Code Review Batch
-
-```bash
-# Review multiple repositories
-uv run python orchestrator.py --skill code-reviewer --repos \
-  ~/work/service-a ~/work/service-b --output code-review.md
-```
-
-### Documentation Sprint
-
-```bash
-# Generate technical decisions for microservices
-uv run python orchestrator.py --skill technical-decision --repos \
-  ~/microservices/*
 ```
 
 ## Project Structure
@@ -262,16 +75,25 @@ uv run python orchestrator.py --skill technical-decision --repos \
 ```
 orchestrator/
 ├── src/orchestrator/          # Main package
-│   ├── __init__.py           # Package initialization
-│   ├── __main__.py           # CLI entry point
 │   ├── orchestrator.py       # Main orchestrator logic
 │   ├── agent_runner.py       # Agentic execution loop
-│   └── agent_tools.py        # Tool definitions & execution
+│   ├── agent_tools.py        # Tool definitions & execution
+│   ├── python_agent_runner.py # Python agent support
+│   └── config.py             # Configuration loader
+├── docs/
+│   ├── guide/                # User guides
+│   │   ├── GETTING_STARTED.md
+│   │   ├── USAGE_MODES.md
+│   │   ├── REPOSITORY_CONFIG.md
+│   │   ├── CLI_REFERENCE.md
+│   │   └── EXAMPLES.md
+│   ├── AUTONOMOUS_MODE.md    # Autonomous execution guide
+│   └── reference/            # Technical references
+├── config/                    # Task configurations
+│   ├── tasks.example.json
+│   └── overnight.json
 ├── tests/                     # Test suite
-│   ├── test_orchestrator.py
-│   ├── test_agent_runner.py
-│   └── test_agent_tools.py
-├── orchestrator.py            # Convenience entry point
+├── orchestrator.py           # Convenience entry point
 ├── pyproject.toml            # Project configuration
 └── README.md                 # This file
 ```
@@ -286,9 +108,6 @@ uv run pytest
 
 # Run with coverage
 uv run pytest --cov=src/orchestrator
-
-# Run specific test file
-uv run pytest tests/test_agent_tools.py -v
 ```
 
 ### Installing for Development
@@ -298,40 +117,6 @@ uv run pytest tests/test_agent_tools.py -v
 uv pip install -e .
 ```
 
-## Future Enhancements
+## License
 
-- Parallel processing for faster batch operations
-- tmux session management for long-running tasks
-- Integration with GitHub project manager JSON
-- Custom templates per repository type
-- Web UI dashboard for results visualization
-- Incremental updates (only re-analyze changed repos)
-- Human-in-the-loop intervention points
-- Session persistence and resumability
-
-
-tmux kill-session -t orchestrator
-
-## Quick Reference
-
-### While in tmux:
-Ctrl+b d        # Detach (keeps session running)
-Ctrl+b &        # Kill current window
-Ctrl+b c        # Create new window
-exit             # ❌ Don't do this - kills the window
-
-### From terminal (outside tmux):
-
-orchestrator    # Start/attach session
-tmux kill-session -t orchestrator   # Kill session
-tmux list-sessions                  # See all sessions
-
-If You Get Nested Error Again
-
-### Force kill the old session
-tmux kill-session -t orchestrator
-
-### Now launch fresh
-orchestrator
-Or to unset the tmux variable temporarily:
-env -u TMUX orchestrator
+MIT License - See LICENSE.txt for details

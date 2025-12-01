@@ -5,7 +5,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "mcp__orchestrator__list_agents",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Read(//Users/mpaz/workspace/claude-toolkit/**)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
