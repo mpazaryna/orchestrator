@@ -9,7 +9,8 @@
       "Read(//Users/mpaz/workspace/claude-toolkit/**)",
       "Bash(git log:*)",
       "Read(//Users/mpaz/workspace/joe/resin-platform/**)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
