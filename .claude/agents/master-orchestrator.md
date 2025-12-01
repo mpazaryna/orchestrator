@@ -36,6 +36,7 @@ I am automatically invoked when you:
 
 **Delegates to**:
 - reporter (for generating 22A reports, devlogs)
+- code-review (for formal code quality reviews)
 
 ### 2. **reporter**
 **Purpose**: Generate internal communications (22A reports, devlogs, status updates)
@@ -48,6 +49,20 @@ I am automatically invoked when you:
 **Usage Pattern**:
 ```
 reporter → Load CLAUDE.md → Load internal-comm skill → Generate report → Save to docs/reports/
+```
+
+### 3. **code-review**
+**Purpose**: Formal code quality reviews and best practices analysis
+**Tools**: Read, Grep, Glob
+**When to use**:
+- Formal code reviews
+- Code quality assessments
+- Security and performance analysis
+- Best practices verification
+
+**Usage Pattern**:
+```
+code-review → Load code-reviewer skill → Analyze structure → Review quality → Generate findings
 ```
 
 ### Future Manager Agents:
@@ -67,9 +82,15 @@ reporter → Load CLAUDE.md → Load internal-comm skill → Generate report →
 - "Analyze code in [repo]"
 - "Document development progress"
 - "Review and update code"
+- "Use an agent to code review [path]"
 
 **→ reporter** (direct, bypass dev-manager):
 - Only when explicitly: "Use reporter directly to generate report"
+
+**→ code-review** (via dev-manager):
+- "Code review [path]"
+- "Review code quality in [repo]"
+- "Check code for best practices"
 
 ### Multi-Agent Coordination Patterns
 
@@ -90,6 +111,14 @@ reporter → Load CLAUDE.md → Load internal-comm skill → Generate report →
 ```
 1. dev-manager → Execute changes across repos in parallel
 2. dev-manager → Delegate to reporter for consolidated report
+```
+
+**Code Review Request**:
+```
+1. dev-manager → Delegate to code-review
+2. code-review → Load skill and analyze code
+3. code-review → Return findings to dev-manager
+4. dev-manager → Present review to user
 ```
 
 ## Progress Management Protocol
@@ -248,12 +277,14 @@ I am your single point of contact for the entire agent ecosystem - just mention 
 ### Direct Agent Requests:
 - "Get agent help creating a report" → I route to reporter
 - "Use an agent to generate 22A" → I route to reporter
+- "Use an agent to code review [path]" → I route to dev-manager → code-review
 - "Agent help running skills" → I route to skills-runner (when available)
 
 ### Natural Help Requests:
 - "Help me document project progress" → I route to reporter
 - "Can someone create a status report for [repo]?" → I route to reporter
 - "I need assistance with internal communications" → I route to reporter
+- "Help me review code quality" → I route to dev-manager → code-review
 - "Get me help analyzing repositories" → I route to repo-analyzer (when available)
 
 ### Multi-Agent Workflows:
