@@ -1,16 +1,18 @@
 # Orchestrator - Agent Coordination System
 
-A Claude Code agent system for intelligent task delegation and workflow coordination. The master orchestrator analyzes requests and routes them to specialized agents, enabling seamless multi-agent collaboration without infrastructure overhead.
+A Claude Code-native agent system for intelligent task delegation and workflow coordination. The master orchestrator analyzes requests and routes them to specialized agents, enabling seamless multi-agent collaboration—all within a Claude Code session, no external infrastructure required.
 
 ## Core Concept
 
-**Simple delegation over complex infrastructure.**
+**Simple delegation over complex infrastructure. Claude Code sessions ARE the orchestrator.**
 
-Instead of building batch processing engines and automation frameworks, we use Claude Code's native agent capabilities to:
+This system uses Claude Code's native agent capabilities within a single interactive session to:
 - Route requests to appropriate specialized agents
 - Load skills from a centralized toolkit
-- Coordinate multi-step workflows naturally
+- Coordinate multi-step workflows through natural language
 - Provide real-time feedback and iteration
+
+No Python execution. No external infrastructure. Just agent coordination within Claude Code.
 
 ## Architecture
 
@@ -67,16 +69,22 @@ Routes to:
 
 ## Quick Start
 
+**This system runs entirely within Claude Code sessions - no Python execution, no CLI tools.**
+
+1. Start a Claude Code session in this directory:
 ```bash
-# No setup required - just use Claude Code
 cd ~/workspace/orchestrator
 claude
-
-# Natural language requests automatically trigger the master-orchestrator
-> "Create a 22A report for this project"
-> "Use an agent to review code quality"
-> "Help me document development progress"
 ```
+
+2. Make natural language requests - the master-orchestrator activates automatically:
+```
+"Create a 22A report for this project"
+"Use an agent to review code quality"
+"Help me document development progress"
+```
+
+That's it. All coordination happens through Claude Code's native agent system.
 
 ## How It Works
 
@@ -199,17 +207,21 @@ We built a sophisticated Python orchestrator with:
 - Task configuration systems
 - 2500+ lines of automation code
 
+**We removed all of it (-3,300 lines total) in December 2025.**
+
 ### What We Learned
 **We were solving problems we didn't have.**
 
-The agent-based approach is:
-- ✅ **Simpler**: No infrastructure, no dependencies
-- ✅ **More effective**: Real-time iteration beats batch jobs
+The Claude Code-native agent approach is:
+- ✅ **Simpler**: No code to run, no dependencies, no infrastructure
+- ✅ **More effective**: Real-time iteration within Claude Code beats batch jobs
 - ✅ **More maintainable**: 200 lines of agent config vs 2500 lines of Python
-- ✅ **More natural**: Natural language beats JSON configs
+- ✅ **More natural**: Natural language delegation beats orchestration code
 - ✅ **More focused**: Solve actual workflow problems, not theoretical scale
 
-See: `docs/devlog/2025-12-01-python-orchestrator-lessons.md` for the full story.
+**Critical insight**: Claude Code sessions *are* the orchestrator. We don't need to build one.
+
+See: `docs/devlog/2025-12-01-python-orchestrator-lessons.md` and `docs/adr/001-agent-based-orchestration-over-python.md` for the full story.
 
 ## Project Structure
 
